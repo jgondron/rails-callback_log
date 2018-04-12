@@ -38,6 +38,15 @@ unset RAILS_CALLBACK_LOG_FILTER
 
 Filtering incurs a serious performance penalty, so it is off by default.
 
+## Changing Format
+
+By default, it will output in a format of "Callback: method_name". You can change this by defining an env with a different format. 
+
+```
+# Change to be a json like { callback: { method: method_name, source_location: file_name, source_line: line_number } }
+export RAILS_CALLBACK_LOG_FORMAT="{ \"callback\": { \"method\": \"%s\", \"source_location\": \"%s\", \"source_line\": \"%s\" } }"
+```
+
 ## See Also
 
 - http://stackoverflow.com/q/13089936/567762

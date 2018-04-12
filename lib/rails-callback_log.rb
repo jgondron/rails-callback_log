@@ -7,6 +7,7 @@ module RailsCallbackLog
   # Filtering is very expensive. It makes my test suite more than 50%
   # slower. So, it's off by default.
   FILTER = ENV["RAILS_CALLBACK_LOG_FILTER"].present?.freeze
+  FORMAT = (ENV["RAILS_CALLBACK_LOG_FORMAT"] || "Callback %s").freeze
 
   class << self
     def logger
@@ -32,7 +33,9 @@ module RailsCallbackLog
       lambda { |*args, &block|
         if !::RailsCallbackLog::FILTER ||
           caller.any? { |line| ::RailsCallbackLog.matches_filter?(line) }
-          ::RailsCallbackLog.logger.debug(format("Callback: %s", @method_name))
+          target, block, method, *arguments = expand(*args, block)
+          source_file, source_line = target.method(method).source_location
+          ::RailsCallbackLog.logger.debug(format(::RailsCallbackLog::FORMAT, method, source_file, source_line))
         end
         original_lambda.call(*args, &block)
       }
@@ -47,7 +50,9 @@ module RailsCallbackLog
       lambda { |*args, &block|
         if !::RailsCallbackLog::FILTER ||
           caller.any? { |line| ::RailsCallbackLog.matches_filter?(line) }
-          ::RailsCallbackLog.logger.debug(format("Callback: %s", filter))
+          target, block, method, *arguments = expand(*args, block)
+          source_file, source_line = target.method(method).source_location
+          ::RailsCallbackLog.logger.debug(format(::RailsCallbackLog::FORMAT, method, source_file, source_line))
         end
         original_lambda.call(*args, &block)
       }
